@@ -1,0 +1,38 @@
+body {
+    background-color: #f8f9fa; /* Color de fondo suave */
+}
+
+.alert {
+    background-color: #007bff; /* Color de fondo de la alerta */
+    color: white; /* Color del texto de la alerta */
+    font-size: 1.5rem; /* Tamaño de fuente de la alerta */
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.btn-info {
+    background-color: #17a2b8; /* Color de fondo del botón */
+    border-color: #17a2b8; /* Color del borde del botón */
+}
+
+.btn-info:hover {
+    background-color: #138496; /* Color de fondo del botón al pasar el mouse */
+    border-color: #117a8b; /* Color del borde del botón al pasar el mouse */
+}
+
+.btn-secondary {
+    background-color: #6c757d; /* Color de fondo del botón secundario */
+    border-color: #6c757d; /* Color del borde del botón secundario */
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268; /* Color de fondo del botón secundario al pasar el mouse */
+    border-color: #545b62; /* Color del borde del botón secundario al pasar el mouse */
+}
+.btn-info:hover {
+    background-color: #138496; /* Color de fondo del botón al pasar el mouse */
+    border-color: #117a8b; /* Color del borde del botón al pasar el mouse */
+}
