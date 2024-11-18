@@ -12,19 +12,19 @@
     </header>  
         
     {% if productos %}
-    <div class="table-inverse">
+    <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
             <thead class="table-dark">
                 <tr>
-                    <th>nombre Producto</th>
-                    <th>descripcion</th>
-                    <th>categoria</th>
-                    <th>denominacion Origen</th>
-                    <th>cantidad Producto</th>
+                    <th>Nombre Producto</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>Denominación Origen</th>
+                    <th>Cantidad Producto</th>
                     <th>Distribuidores</th>
                     <th>Facturas</th>
+                    <th>Código QR</th> <!-- Nueva columna -->
                     <th colspan="2" class="text-center">Acciones</th>
-                
                 </tr>
             </thead>
             <tbody>
@@ -37,47 +37,46 @@
                     <td>{{ producto.cantidadProducto }}</td>
                     <td>
                         {% for distribuidor in producto.distribuidores.all %}
-                            <span class="badge bg-secondary">{{ distribuidor }} {% if not forloop.last %}, {% endif %}</span> 
+                            <span class="badge bg-secondary">{{ distribuidor }}{% if not forloop.last %}, {% endif %}</span>
                         {% empty %}
-                            <span class="text-muted">Sin distribuidores
-                            </span>                         {% endfor %}
+                            <span class="text-muted">Sin distribuidores</span>
+                        {% endfor %}
                     </td>
                     <td>
                         {% for factura in producto.facturas.all %}
-                            <span class="badge bg-secondary">{{ factura }} {% if not forloop.last %}, {% endif %}</span> 
+                            <span class="badge bg-secondary">{{ factura }}{% if not forloop.last %}, {% endif %}</span>
                         {% empty %}
-                            <span class="text-muted">Sin facturas</span> 
+                            <span class="text-muted">Sin facturas</span>
                         {% endfor %}
                     </td>
-
-                    <td><a href="/actualizarProducto/{{ producto.pk }}" class="btn btn-success btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-check-fill" viewBox="0 0 16 16">
-                        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1m1.354 4.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
-                    </svg></a></td>
-            
-                    <td><a href="/eliminarProducto/{{ producto.pk }}" class="btn btn-danger btn-sm"  onclick="return confirm('¿Estás seguro de que deseas eliminar esta producto?')"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                    </svg>
-                    </a></td>
+                    <td>
+                        {% if producto.qr_code %}
+                            <img src="{{ producto.qr_code.url }}" alt="Código QR de {{ producto.nombreProducto }}" width="100">
+                        {% else %}
+                            <span class="text-muted">QR no disponible</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/actualizarProducto/{{ producto.pk }}" class="btn btn-success btn-sm">Actualizar</a>
+                    </td>
+                    <td>
+                        <a href="/eliminarProducto/{{ producto.pk }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">Eliminar</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     {% else %}
-
-    <div class="alert alert-primary text-center" role="alert">
-        <strong>No se encuentra productos en el sistema</strong>
-    </div>
-    
+        <div class="alert alert-warning text-center">
+            No hay productos disponibles.
+        </div>
     {% endif %}
     <div class="d-flex justify-content-between mt-4">
         <a href="../" class="btn btn-danger">VOLVER</a>
         <a href="/agregarProducto" class="btn btn-info float-end">Agregar Producto</a>
         
     </div>
-
-    
     <footer class="footer mt-5 text-center">
         <p>&copy; 2024 Sistema de Bodega. Todos los derechos reservados.</p>
     </footer>

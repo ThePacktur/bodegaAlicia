@@ -1,7 +1,12 @@
+import qrcode
 from django.db import models
+from io import BytesIO
+from django.core.files import File
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
+
+import qrcode.constants
 # Función de validación que verifica si un valor es positivo
 def validacion_positivo(value):
     if value < 0:
@@ -50,13 +55,53 @@ class Factura(models.Model):
 
 class Productos(models.Model):
     idProducto = models.AutoField(primary_key=True)
-    distribuidores = models.ManyToManyField(Distribuidor, related_name="productos", null=True, blank=True )
+    distribuidores = models.ManyToManyField(Distribuidor, related_name="productos", null=True, blank=True)
     facturas = models.ManyToManyField(Factura, related_name="productos", null=True, blank=True)
     nombreProducto = models.CharField(max_length=50)
     descripcion = models.TextField(max_length=50)
     categoria = models.CharField(max_length=50)
     denominacionOrigen = models.CharField(max_length=50)
     cantidadProducto = models.IntegerField(validators=[validacion_positivo])
+    qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
+
+    def generate_qr_code(self):
+        # Información a incluir en el QR
+        factura = self.facturas.first()  # Corregido: Usar 'facturas.first()' en lugar de 'facturas_set.first()'
+        distribuidor = factura.distribuidor if factura else None  # Acceder correctamente al distribuidor
+
+        qr_data = {
+            'Producto': self.nombreProducto,
+            'Descripcion': self.descripcion,
+            'Categoria': self.categoria,
+            'Denominacion de origen': self.denominacionOrigen or 'N/A',
+            'Cantidad': self.cantidadProducto,
+            'Factura': factura.id if factura else 'Sin Factura',
+            'Distribuidor': distribuidor.id if distribuidor else 'Sin Distribuidor'
+        }
+
+        # Crear el QR
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(qr_data)
+        qr.make(fit=True)
+
+        # Convertir el QR en imagen
+        img = qr.make_image(fill='black', back_color='white')
+        buffer = BytesIO()
+        img.save(buffer)
+        buffer.seek(0)
+
+        # Guardar el QR en el campo del modelo
+        self.qr_code.save(f'qr_{self.pk}.png', File(buffer), save=False)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Guarda el producto primero
+        self.generate_qr_code()  # Genera y guarda el QR
+        super().save(*args, **kwargs)  # Guarda nuevamente el QR actualizado
 
     def __str__(self):
         return f'Producto: {self.idProducto} - {self.nombreProducto}'
