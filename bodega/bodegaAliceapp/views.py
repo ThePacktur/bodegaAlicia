@@ -1,105 +1,93 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from bodegaAliceapp.models import Productos, Distribuidor, Factura
-from bodegaAliceapp.forms import FormProducto, FormDistribuidor, FormFactura
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
-# Create your views here.
+from bodegaAliceapp.forms import FormDistribuidor, FormFactura, FormProducto
+from bodegaAliceapp.models import Distribuidor, Factura, Productos
+
 
 def index(request):
     return render(request, 'bodegaAliceapp/index.html')
 
+
 def listadoProducto(request):
-    productos = Productos.objects.all()
-    data = {'productos': productos}
-    return render(request, 'bodegaAliceapp/producto.html', data)
+    productos = Productos.objects.prefetch_related('distribuidores', 'facturas').order_by('idProducto')
+    return render(request, 'bodegaAliceapp/producto.html', {'productos': productos})
+
 
 def listadoDistribuidor(request):
-    distribuidores = Distribuidor.objects.all()
-    data = {'distribuidores': distribuidores}
-    return render(request, 'bodegaAliceapp/distribuidor.html', data)
+    distribuidores = Distribuidor.objects.order_by('idDistribuidor')
+    return render(request, 'bodegaAliceapp/distribuidor.html', {'distribuidores': distribuidores})
+
 
 def listadoFactura(request):
-    facturas = Factura.objects.all()
-    data = {'facturas': facturas}
-    return render(request, 'bodegaAliceapp/factura.html', data)
+    facturas = Factura.objects.select_related('distribuidor').order_by('idFactura')
+    return render(request, 'bodegaAliceapp/factura.html', {'facturas': facturas})
+
 
 def agregarProducto(request):
-    form = FormProducto()
-    if request.method == 'POST':
-        form = FormProducto(request.POST)
-        if form.is_valid():
-            producto = form.save(commit=False)  # Guarda pero no lo envía a la base aún
-            producto.save()                    # Genera el QR al guardar
-            return redirect('/productos')
-    data = {'form': form}
-    return render(request, 'bodegaAliceapp/agregarProducto.html', data)
+    form = FormProducto(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect(reverse('productos'))
+    return render(request, 'bodegaAliceapp/agregarProducto.html', {'form': form})
+
 
 def agregarDistribuidor(request):
-    form = FormDistribuidor()
-    if request.method == 'POST':
-        form = FormDistribuidor(request.POST)
-        if form.is_valid():
-            form.save()
-        return redirect('/distribuidores')
-    data = {'form': form}
-    return render(request, 'bodegaAliceapp/agregarDistribuidor.html', data)
+    form = FormDistribuidor(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect(reverse('distribuidores'))
+    return render(request, 'bodegaAliceapp/agregarDistribuidor.html', {'form': form})
+
 
 def agregarFactura(request):
-    form = FormFactura()
-    if request.method == 'POST':
-        form = FormFactura(request.POST)
-        if form.is_valid():
-            form.save()
-        else:
-            print(form.errors)
-        return redirect('/facturas')
-    data = {'form': form}
-    return render(request, 'bodegaAliceapp/agregarFactura.html', data)
+    form = FormFactura(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect(reverse('facturas'))
+    return render(request, 'bodegaAliceapp/agregarFactura.html', {'form': form})
+
 
 def eliminarProducto(request, pk):
     producto = get_object_or_404(Productos, pk=pk)
     producto.delete()
-    return redirect('/productos')
+    return redirect(reverse('productos'))
+
 
 def eliminarDistribuidor(request, pk):
     distribuidor = get_object_or_404(Distribuidor, pk=pk)
     distribuidor.delete()
-    return redirect('/distribuidores')
+    return redirect(reverse('distribuidores'))
+
 
 def eliminarFactura(request, pk):
     factura = get_object_or_404(Factura, pk=pk)
     factura.delete()
-    return redirect('/facturas')
+    return redirect(reverse('facturas'))
+
 
 def actualizarProducto(request, pk):
     producto = get_object_or_404(Productos, pk=pk)
-    form = FormProducto(instance=producto)
-    if request.method == 'POST':
-        form = FormProducto(request.POST, instance=producto)
-        if form.is_valid():
-            producto = form.save(commit=False)  # Guarda pero no lo envía a la base aún
-            producto.save()                    # Actualiza el QR al guardar
-            return redirect('/productos')
-    data = {'form': form}
-    return render(request, 'bodegaAliceapp/agregarProducto.html', data)
+    form = FormProducto(request.POST or None, instance=producto)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect(reverse('productos'))
+    return render(request, 'bodegaAliceapp/agregarProducto.html', {'form': form})
+
 
 def actualizarDistribuidores(request, pk):
     distribuidor = get_object_or_404(Distribuidor, pk=pk)
-    form = FormDistribuidor(instance=distribuidor)
-    if request.method == 'POST':
-        form = FormDistribuidor(request.POST, instance=distribuidor)
-        if form.is_valid():
-            form.save()
-        return redirect('/distribuidores')
-    data = {'form': form}
-    return render(request, 'bodegaAliceapp/agregarDistribuidor.html', data)
+    form = FormDistribuidor(request.POST or None, instance=distribuidor)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect(reverse('distribuidores'))
+    return render(request, 'bodegaAliceapp/agregarDistribuidor.html', {'form': form})
+
 
 def actualizarFactura(request, pk):
     factura = get_object_or_404(Factura, pk=pk)
-    form = FormFactura(instance=factura)
-    if request.method == 'POST':
-        form = FormFactura(request.POST, instance=factura)
-        if form.is_valid():
-            form.save()
-        return redirect('/facturas')
-    data = {'form': form}
-    return render(request, 'bodegaAliceapp/agregarFactura.html', data)
+    form = FormFactura(request.POST or None, instance=factura)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect(reverse('facturas'))
+    return render(request, 'bodegaAliceapp/agregarFactura.html', {'form': form})
